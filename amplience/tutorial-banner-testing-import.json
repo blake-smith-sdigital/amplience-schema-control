@@ -1,0 +1,5 @@
+{
+  "body": "./schemas/tutorial-banner-testing-import-schema.json",
+  "schemaId": "https://specialized.com/B2C/contents/tutorial-banner-testing-import",
+  "validationLevel": "CONTENT_TYPE"
+}

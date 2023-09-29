@@ -1,0 +1,5 @@
+{
+  "body": "./schemas/text-testing-import-schema.json",
+  "schemaId": "https://specialized.com/B2C/contents/text-testing-import",
+  "validationLevel": "CONTENT_TYPE"
+}

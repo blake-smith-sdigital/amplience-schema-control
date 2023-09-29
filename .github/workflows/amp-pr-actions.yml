@@ -1,0 +1,277 @@
+name: Amplience Schema Github Actions
+
+on:
+  pull_request:
+    types:
+    # - opened
+    # - synchronize
+    - closed
+  push:
+    branches:
+      - main # TODO bs update to master
+    paths:
+      - "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/**"
+
+env:
+    HUB_SANDBOX: "Amplience B2C Sandbox"
+    # HUB_STAGING: "Amplience B2C QA2 (Staging)" // TODO bs bring back after testing
+    HUB_STAGING: "Amplience B2C Sandbox"
+    HUB_PROD: "Amplience B2C DEV2 (Prod)"
+    SCHEMA_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/"
+    SCHEMA_PARENT_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/"
+
+jobs:
+  amplience-pr-actions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get Event Information
+        id: event_info
+        run: |
+          event_name=${{ github.event_name }}
+          echo "event_name=${{ github.event_name }}" >> $GITHUB_ENV
+
+          if [[ $event_name == "pull_request" ]]; then
+            echo "pr_type=${{ github.event.action }}" >> $GITHUB_ENV
+            echo "current_branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+            echo "destination_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+            echo "isMerged=${{ github.event.pull_request.merged }}" >> $GITHUB_ENV
+          fi
+
+      - name: Check for Amplience File/Schema Changes
+        id: changed_files
+        env:
+          event_name: ${{ env.event_name }}
+          pr_type: ${{ env.pr_type }}
+          current_branch: ${{ env.current_branch }}
+          destination_branch: ${{ env.destination_branch }}
+          isMerged: ${{ env.isMerged }}
+        run: |
+
+          if [[ $event_name == "pull_request" ]]; then
+            echo "PR Type: $pr_type"
+            echo "Current Branch: $current_branch"
+            echo "Destination Branch: $destination_branch"
+            echo "PR Merged: $isMerged"
+          fi
+
+          if [[ $event_name == "pull_request" ]]; then
+            if [[ "$pr_type" == "closed" && "$isMerged" == "true" ]]; then
+              echo "PR was merged & closed ..."
+
+              pull_request_number="${{ github.event.pull_request.number }}"
+
+              API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/$pull_request_number/files"
+              RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.API_ACCESS_TOKEN }}" "$API_URL")
+
+              FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
+            
+            # TODO bs
+            # elif [[ "$pr_type" == "opened" || "$pr_type" == "synchronize" ]]; then
+            #   echo "PR is open or synchronize ..."
+
+            #   git fetch origin $destination_branch
+            #   FILES=$(git diff --name-only origin/$destination_branch..HEAD -- ./$SCHEMA_DIR | tr '\n' ' ')
+
+            #   if [[ -z "$FILES" && "$pr_type" == "synchronize" ]]; then
+            #     git fetch --unshallow origin $current_branch
+
+            #     commit_hash="${{ github.sha }}"
+            #     previous_commit_hash="${{ github.event.before }}"
+
+            #     FILES=$(git diff --name-only $previous_commit_hash $commit_hash -- "$SCHEMA_DIR" | tr '\n' ' ')
+            #   fi
+            fi
+
+          elif [[ "$event_name" == "push" ]]; then
+            echo "Event type is push ..."
+            git fetch --unshallow origin main
+            FILES=$(git diff --name-only HEAD~1 -- "$SCHEMA_DIR" | tr '\n' ' ')
+            echo "FILES: $FILES"
+          fi
+
+          echo "$FILES" > changed_files.txt
+          changed_files=$(cat changed_files.txt)
+
+          if [[ -n "$changed_files" ]]; then
+            echo "has_changed_files=true" >> $GITHUB_ENV
+            echo "File changes were detected in $SCHEMA_DIR."
+          else
+            echo "has_changed_files=false" >> $GITHUB_ENV
+            echo "There are no changed files in $SCHEMA_DIR."
+          fi
+
+      - name: Configure the Hub to update
+        id: configure_hub
+        if: env.has_changed_files == 'true'
+        env:
+          event_name: ${{ env.event_name }}
+          pr_type: ${{ env.pr_type }}
+          destination_branch: ${{ env.destination_branch }}
+          isMerged: ${{ env.isMerged }}
+          has_changed_files: ${{ env.has_changed_files }}
+
+          AMPLIENCE_CLIENT_ID_SANDBOX: ${{ vars.AMPLIENCE_CLIENT_ID_SANDBOX }}
+          AMPLIENCE_CLIENT_ID_QA2: ${{ vars.AMPLIENCE_CLIENT_ID_QA2 }}
+          AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
+          
+          AMPLIENCE_HUB_ID_SANDBOX: ${{ vars.AMPLIENCE_HUB_ID_SANDBOX }}
+          AMPLIENCE_HUB_ID_QA2: ${{ vars.AMPLIENCE_HUB_ID_QA2 }}
+          AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
+          
+          AMPLIENCE_SECRET_SANDBOX: ${{ secrets.AMPLIENCE_SECRET_SANDBOX }}
+          AMPLIENCE_SECRET_QA2: ${{ secrets.AMPLIENCE_SECRET_QA2 }}
+          AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
+
+        run: |
+          if [[ $event_name == "pull_request" ]]; then
+
+            # TODO bs
+            # if [[ "${{ env.pr_type }}" == "opened" || "${{ env.pr_type }}" == "synchronize" ]]; then
+            #   echo "The PR is of type 'opened' or 'synchronize'."
+            #   if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+            #     hub_to_update="$HUB_SANDBOX"
+            #   fi
+            # elif [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
+
+            if [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
+              echo "The PR is of type 'closed & merged'."
+
+              if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+                hub_to_update="$HUB_STAGING"
+              elif [[ "${{ env.destination_branch }}" == "main" ]]; then
+                hub_to_update="$HUB_PROD"
+              fi
+            fi
+          elif [[ "$event_name" == "push" ]]; then
+            hub_to_update="$HUB_PROD"
+          fi
+
+          echo "hub_to_update=$hub_to_update" >> $GITHUB_ENV
+
+          if [[ -n $hub_to_update ]]; then
+            echo "Hub to update: $hub_to_update"
+            if [[ "$hub_to_update" == "$HUB_SANDBOX" ]]; then
+              client_id=$AMPLIENCE_CLIENT_ID_SANDBOX
+              client_secret=$AMPLIENCE_SECRET_SANDBOX
+              hub_id=$AMPLIENCE_HUB_ID_SANDBOX
+            elif [[ $hub_to_update = "$HUB_STAGING" ]]; then
+              # TODO bs BRING BACK !!!!
+              # client_id=$AMPLIENCE_CLIENT_ID_QA2
+              # client_secret=$AMPLIENCE_SECRET_QA2
+              # hub_id=$AMPLIENCE_HUB_ID_QA2
+              # TODO bs below is for testing!!!
+              client_id=$AMPLIENCE_CLIENT_ID_SANDBOX
+              client_secret=$AMPLIENCE_SECRET_SANDBOX
+              hub_id=$AMPLIENCE_HUB_ID_SANDBOX
+            elif [[ $hub_to_update = "$HUB_PROD" ]]; then
+              client_id=$AMPLIENCE_CLIENT_ID_DEV2
+              client_secret=$AMPLIENCE_SECRET_DEV2
+              hub_id=$AMPLIENCE_HUB_ID_DEV2
+            fi
+            echo "client_id=$client_id" >> $GITHUB_ENV
+            echo "client_secret=$client_secret" >> $GITHUB_ENV
+            echo "hub_id=$hub_id" >> $GITHUB_ENV
+          else 
+            echo "There is no Hub to update."
+          fi
+
+      - name: Install DC-CLI
+        id: install_dependencies
+        if: ${{ env.hub_to_update != '' }}
+        env:
+          client_id: ${{ env.client_id }}
+          client_secret: ${{ env.client_secret }}
+          hub_id: ${{ env.hub_id }}
+          hub_to_update: ${{ env.hub_to_update }}
+
+        run: |
+          echo "Install npm (latest) ..."
+          npm install -g npm@latest
+
+          echo "Install dc-cli ..."
+          sudo npm install -g @amplience/dc-cli
+
+          echo "dc-cli config ..."
+          dc-cli configure --clientId $client_id --clientSecret $client_secret --hubId $hub_id
+
+      - name: Process files
+        id: process_changed_files
+        if: ${{ env.hub_to_update != '' }}
+        env:
+          hub_to_update: ${{ env.hub_to_update }}
+
+        run: |
+          test -e $file && echo "File found: $file" || "File not found: $file"
+          echo "Create local folders for file export ..."
+          mkdir -p "export/schemas"
+
+          pointer_folder="export"
+          schema_folder="export/schemas"
+
+          while IFS= read -r -d ' ' file; do
+            echo "Processing file: $file ..."
+
+            filename=$(basename "$file")
+            cp -v "$file" "$schema_folder"
+            echo "File copied to: $schema_folder"
+
+            # TODO bs schema has this declaration
+            pointer_file="${filename/-schema/}"
+            echo "Pointer file name: $pointer_file"
+
+            cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
+            echo "File copied to: $pointer_folder"
+          done < changed_files.txt
+
+          echo "Local folders & files for export:"
+          find export -type f
+
+          echo "Importing files to Amplience Hub ..."
+          schema_export=$(dc-cli content-type-schema import export)
+          echo "Schema export: $schema_export"
+
+          trimmed_output=$(echo "$schema_export" | awk '{$1=$1;print}')
+          schema_lines=$(echo "$trimmed_output" | awk -F'|' '{if (NF>2) print $2 "|" $3 "|" $4}')
+
+          schema_ids=()
+          while IFS='|' read -r id schema_id result; do
+            if [[ "$result" == *"UPDATED"* || "$result" == *"UP-TO-DATE"* ]]; then
+              echo "Schema Id: $schema_id"
+              schema_ids+=("$schema_id")
+            fi
+          done <<< "$schema_lines"
+          echo "Schema Ids: ${schema_ids[@]}"
+
+          content_type_list=$(dc-cli content-type list --json)
+
+          echo "Looping thru the schema_ids array ..."
+          for schema_id in "${schema_ids[@]}"; do
+            echo "schema_id: $schema_id"
+
+            trimmed_schema_id=$(echo "$schema_id" | awk '{$1=$1;print}')
+
+            content_type=$(echo "$content_type_list" | jq -r --arg schemaId "$trimmed_schema_id" '.[] | select(.contentTypeUri == $schemaId)')
+            echo "content_type: $content_type"
+
+            if [ -n "$content_type" ]; then
+              content_type_id=$(echo "$content_type" | jq -r '.id')
+              echo "content_type_id: $content_type_id"
+
+              echo "Syncing content type with updated schema ..."
+              dc-cli content-type sync $content_type_id
+            else
+              echo "Skipping content type synchronization. No content items with this content type schema found."
+            fi
+          done
+
+      - name: Upload log file as artifact
+        if: env.has_changed_files == 'true'
+        env: 
+          has_changed_files: ${{ env.has_changed_files }}
+        uses: actions/upload-artifact@v2
+        with:
+          name: dc-cli-logs
+          path: /home/runner/.amplience/logs/*.log

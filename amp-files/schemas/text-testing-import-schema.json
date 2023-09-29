@@ -1,0 +1,101 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "https://specialized.com/B2C/contents/text-testing-import",
+    "title": "Text",
+    "description": "How to add string and rich text properties to your text. Includes validations",
+    "$comment": "Docs: https://amplience.com/docs/development/schema-examples/coreconcepts/text.html",
+    "allOf": [
+        {
+            "$ref": "http://bigcontent.io/cms/schema/v1/core#/definitions/content"
+        }
+    ],
+    "type": "object",
+    "properties": {
+        "stringUpdated": {
+            "title": "String with min and max",
+            "description": "Enter a string (0 to 255 characters)",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 255
+        },
+        "richTextString": {
+            "title": "Rich text string",
+            "description": "Enter text using rich text or markdown",
+            "type": "string",
+            "format": "markdown"
+        },
+        "uriExample": {
+            "title": "uri",
+            "description": "A full URL (https://yourdomain.com/productpage)",
+            "type": "string",
+            "format": "uri",
+            "maxLength": 100
+        },
+        "dateWithPattern": {
+            "$comment": "A date constrained using a regular expression specified by the pattern",
+            "title": "Date",
+            "description": "Enter a date(YYYY-MM-DD)",
+            "type": "string",
+            "maxLength": 10,
+            "minLength": 10,
+            "pattern": "^[0-9]{4}-((0[1-9])|(1[0-2]))-((0[1-9])|([1-2][0-9])|(3[0-1]))$"
+        },
+        "urlslug": {
+            "$comment": "A string constrained to be an alphanumeric URL slug",
+            "title": "URL slug",
+            "description": "URL slug (a-z and 0-9)",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[a-z0-9-]+$"
+        },
+        "stringFromEnum": {
+            "title": "String value",
+            "description": "Choose a string value from the list",
+            "type": "string",
+            "enum": [
+                "String Value 1",
+                "String Value 2",
+                "String Value 3",
+                "String Value 4"
+            ]
+        },
+        "color": {
+            "$comment": "A string constrained to be an alphanumeric URL slug",
+            "title": "Color",
+            "description": "Pick a color",
+            "type": "string",
+            "format": "color"
+        },
+        "dateFormat": {
+            "$comment": "A string property with the date format",
+            "title": "Date",
+            "description": "Enter the date",
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 50,
+            "format": "date",
+            "examples": [
+                "2019-10-15",
+                "2018-07-31"
+            ]
+        },
+        "stringConstant": {
+            "title": "String constant",
+            "description": "A string value that cannot be edited",
+            "type": "string",
+            "const": "United Kingdom"
+        }
+    },
+    "propertyOrder": [
+        "stringConstant",
+        "stringFromEnum",
+        "stringUpdated",
+        "richTextString",
+        "uriExample",
+        "urlslug",
+        "dateFormat",
+        "dateWithPattern",
+        "color"
+    ]
+}
