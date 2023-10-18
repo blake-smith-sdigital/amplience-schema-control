@@ -15,8 +15,10 @@ on:
 env:
     HUB_SANDBOX: "Amplience B2C Sandbox"
     # HUB_STAGING: "Amplience B2C QA2 (Staging)" // TODO bs bring back after testing
-    HUB_STAGING: "Amplience B2C Sandbox"
-    HUB_PROD: "Amplience B2C DEV2 (Prod)"
+    # HUB_STAGING: "Amplience B2C Sandbox"
+    HUB_STAGING: "Amplience B2C Development"
+    # HUB_PROD: "Amplience B2C DEV2 (Prod)"
+    HUB_PROD: "Amplience B2C QA2 (Prod)"
     SCHEMA_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/"
     SCHEMA_PARENT_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/"
 
@@ -158,18 +160,13 @@ jobs:
               client_secret=$AMPLIENCE_SECRET_SANDBOX
               hub_id=$AMPLIENCE_HUB_ID_SANDBOX
             elif [[ $hub_to_update = "$HUB_STAGING" ]]; then
-              # TODO bs BRING BACK !!!!
-              # client_id=$AMPLIENCE_CLIENT_ID_QA2
-              # client_secret=$AMPLIENCE_SECRET_QA2
-              # hub_id=$AMPLIENCE_HUB_ID_QA2
-              # TODO bs below is for testing!!!
-              client_id=$AMPLIENCE_CLIENT_ID_SANDBOX
-              client_secret=$AMPLIENCE_SECRET_SANDBOX
-              hub_id=$AMPLIENCE_HUB_ID_SANDBOX
-            elif [[ $hub_to_update = "$HUB_PROD" ]]; then
               client_id=$AMPLIENCE_CLIENT_ID_DEV2
               client_secret=$AMPLIENCE_SECRET_DEV2
               hub_id=$AMPLIENCE_HUB_ID_DEV2
+            elif [[ $hub_to_update = "$HUB_PROD" ]]; then
+              client_id=$AMPLIENCE_CLIENT_ID_QA2
+              client_secret=$AMPLIENCE_SECRET_QA2
+              hub_id=$AMPLIENCE_HUB_ID_QA2
             fi
             echo "client_id=$client_id" >> $GITHUB_ENV
             echo "client_secret=$client_secret" >> $GITHUB_ENV
