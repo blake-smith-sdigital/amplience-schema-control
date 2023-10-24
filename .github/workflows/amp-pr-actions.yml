@@ -8,16 +8,14 @@ on:
     - closed
   push:
     branches:
-      - main # TODO bs update to master
+      - master # TODO bs update to master
     paths:
       - "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/**"
 
 env:
     HUB_SANDBOX: "Amplience B2C Sandbox"
-    # HUB_STAGING: "Amplience B2C QA2 (Staging)" // TODO bs bring back after testing
-    # HUB_STAGING: "Amplience B2C Sandbox"
-    HUB_STAGING: "Amplience B2C Development"
-    # HUB_PROD: "Amplience B2C DEV2 (Prod)"
+    HUB_DEVELOP: "Amplience B2C Development"
+    HUB_QA: "Amplience B2C QA (B2C Production)"
     HUB_PROD: "Amplience B2C QA2 (Prod)"
     SCHEMA_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/"
     SCHEMA_PARENT_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/"
@@ -89,7 +87,7 @@ jobs:
 
           elif [[ "$event_name" == "push" ]]; then
             echo "Event type is push ..."
-            git fetch --unshallow origin main
+            git fetch --unshallow origin master
             FILES=$(git diff --name-only HEAD~1 -- "$SCHEMA_DIR" | tr '\n' ' ')
             echo "FILES: $FILES"
           fi
@@ -116,14 +114,17 @@ jobs:
           has_changed_files: ${{ env.has_changed_files }}
 
           AMPLIENCE_CLIENT_ID_SANDBOX: ${{ vars.AMPLIENCE_CLIENT_ID_SANDBOX }}
+          AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
           AMPLIENCE_CLIENT_ID_QA2: ${{ vars.AMPLIENCE_CLIENT_ID_QA2 }}
           AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
           
           AMPLIENCE_HUB_ID_SANDBOX: ${{ vars.AMPLIENCE_HUB_ID_SANDBOX }}
+          AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
           AMPLIENCE_HUB_ID_QA2: ${{ vars.AMPLIENCE_HUB_ID_QA2 }}
           AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
           
           AMPLIENCE_SECRET_SANDBOX: ${{ secrets.AMPLIENCE_SECRET_SANDBOX }}
+          AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
           AMPLIENCE_SECRET_QA2: ${{ secrets.AMPLIENCE_SECRET_QA2 }}
           AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
 
@@ -142,8 +143,11 @@ jobs:
               echo "The PR is of type 'closed & merged'."
 
               if [[ "${{ env.destination_branch }}" == "develop" ]]; then
-                hub_to_update="$HUB_STAGING"
-              elif [[ "${{ env.destination_branch }}" == "main" ]]; then
+                hub_to_update="$HUB_DEVELOP"
+              elif [[ "${{ env.destination_branch }}" == "qa" ]]; then
+                hub_to_update="$HUB_QA"
+              fi
+              elif [[ "${{ env.destination_branch }}" == "master" ]]; then
                 hub_to_update="$HUB_PROD"
               fi
             fi
@@ -159,10 +163,14 @@ jobs:
               client_id=$AMPLIENCE_CLIENT_ID_SANDBOX
               client_secret=$AMPLIENCE_SECRET_SANDBOX
               hub_id=$AMPLIENCE_HUB_ID_SANDBOX
-            elif [[ $hub_to_update = "$HUB_STAGING" ]]; then
+            elif [[ $hub_to_update = "$HUB_DEVELOP" ]]; then
               client_id=$AMPLIENCE_CLIENT_ID_DEV2
               client_secret=$AMPLIENCE_SECRET_DEV2
               hub_id=$AMPLIENCE_HUB_ID_DEV2
+            elif [[ $hub_to_update = "$HUB_QA" ]]; then
+              client_id=$AMPLIENCE_CLIENT_ID_QA
+              client_secret=$AMPLIENCE_SECRET_QA
+              hub_id=$AMPLIENCE_HUB_ID_QA
             elif [[ $hub_to_update = "$HUB_PROD" ]]; then
               client_id=$AMPLIENCE_CLIENT_ID_QA2
               client_secret=$AMPLIENCE_SECRET_QA2
