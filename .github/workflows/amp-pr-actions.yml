@@ -14,7 +14,7 @@ env:
     HUB_SANDBOX: "Amplience B2C Sandbox"
     HUB_DEVELOP: "Amplience B2C Development"
     HUB_QA: "Amplience B2C QA (B2C Production)"
-    HUB_PROD: "Amplience B2C QA2 (Prod)"
+    HUB_PROD: "Amplience B2C Production"
     SCHEMA_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/"
     SCHEMA_PARENT_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/"
 
@@ -97,17 +97,17 @@ jobs:
 
           AMPLIENCE_CLIENT_ID_SANDBOX: ${{ vars.AMPLIENCE_CLIENT_ID_SANDBOX }}
           AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
-          AMPLIENCE_CLIENT_ID_QA2: ${{ vars.AMPLIENCE_CLIENT_ID_QA2 }}
+          AMPLIENCE_CLIENT_ID_PRODUCTION: ${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}
           AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
           
           AMPLIENCE_HUB_ID_SANDBOX: ${{ vars.AMPLIENCE_HUB_ID_SANDBOX }}
           AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
-          AMPLIENCE_HUB_ID_QA2: ${{ vars.AMPLIENCE_HUB_ID_QA2 }}
+          AMPLIENCE_HUB_ID_PRODUCTION: ${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}
           AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
           
           AMPLIENCE_SECRET_SANDBOX: ${{ secrets.AMPLIENCE_SECRET_SANDBOX }}
           AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
-          AMPLIENCE_SECRET_QA2: ${{ secrets.AMPLIENCE_SECRET_QA2 }}
+          AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
           AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
 
         run: |
@@ -145,9 +145,9 @@ jobs:
               client_secret=$AMPLIENCE_SECRET_QA
               hub_id=$AMPLIENCE_HUB_ID_QA
             elif [[ $hub_to_update = "$HUB_PROD" ]]; then
-              client_id=$AMPLIENCE_CLIENT_ID_QA2
-              client_secret=$AMPLIENCE_SECRET_QA2
-              hub_id=$AMPLIENCE_HUB_ID_QA2
+              client_id=$AMPLIENCE_CLIENT_ID_PRODUCTION
+              client_secret=$AMPLIENCE_SECRET_PRODUCTION
+              hub_id=$AMPLIENCE_HUB_ID_PRODUCTION
             fi
             echo "client_id=$client_id" >> $GITHUB_ENV
             echo "client_secret=$client_secret" >> $GITHUB_ENV
