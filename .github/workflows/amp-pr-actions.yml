@@ -124,8 +124,9 @@ jobs:
                 hub_to_update="$HUB_PROD"
               fi
             fi
-          elif [[ "$event_name" == "push" ]]; then
-            hub_to_update="$HUB_PROD"
+            # TODO save
+            # elif [[ "$event_name" == "push" ]]; then
+            #  hub_to_update="$HUB_PROD"
           fi
 
           echo "hub_to_update=$hub_to_update" >> $GITHUB_ENV
