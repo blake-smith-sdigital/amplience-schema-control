@@ -146,7 +146,6 @@ jobs:
                 hub_to_update="$HUB_DEVELOP"
               elif [[ "${{ env.destination_branch }}" == "qa" ]]; then
                 hub_to_update="$HUB_QA"
-              fi
               elif [[ "${{ env.destination_branch }}" == "master" ]]; then
                 hub_to_update="$HUB_PROD"
               fi
