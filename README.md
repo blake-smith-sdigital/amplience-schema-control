@@ -4,7 +4,7 @@ Get Event Information: Retrieves information about the triggered event and sets 
 
 Check for Amplience File/Schema Changes: Checks for changes in Amplience schemas based on the commit/pull request type and branch. If the pull request is closed and merged, it uses the GitHub API to retrieve the changed files. Otherwise, it uses Git commands to compare the files between the base branch and the current branch.
 
-Check for Hub to update: If there are changed files, determine the Amplience hub to update based on the commit/pull request type and destination branch. The hub to update is set to one of three environments: Amplience B2C Sandbox, Amplience B2C QA2 (Staging), or Amplience B2C DEV2 (Prod).
+Check for Hub to update: If there are changed files, determine the Amplience hub to update based on the commit/pull request type and destination branch. The hub to update is set to one of three environments: Amplience B2C Playground, Amplience B2C QA2 (Staging), or Amplience B2C DEV2 (Prod).
 
 Install DC-CLI: Installs and configures the Amplience Dynamic Content CLI (dc-cli) tool using npm. The installation is performed only if there is a hub to update.
 
@@ -20,7 +20,7 @@ Hub Mappings:
 
 | Source                     | Destination  | PR type      | Hub to update     |
 |----------------------------|--------------|--------------|-------------------|
-| Feature or fix branch XYZ  | Develop      | Opened       | B2C Sandbox       |
+| Feature or fix branch XYZ  | Develop      | Opened       | B2C PLAYGROUND    |
 | Feature or fix branch XYZ  | Develop      | Merged       | B2C QA2 (Staging) |
 | Any                        | Main         | Commit/Merge | B2C DEV2 (Prod)   |
 
@@ -30,7 +30,7 @@ Secrets:
 
 API_ACCESS_TOKEN
 
-AMPLIENCE_SECRET_SANDBOX
+AMPLIENCE_SECRET_PLAYGROUND
 
 AMPLIENCE_SECRET_PRODUCTION
 
@@ -41,13 +41,13 @@ Create Github Personal Access Token - To access the Git API
 
 Variables:
 
-AMPLIENCE_CLIENT_ID_SANDBOX
+AMPLIENCE_CLIENT_ID_PLAYGROUND
 
 AMPLIENCE_CLIENT_ID_PRODUCTION
 
 AMPLIENCE_CLIENT_ID_DEV2
 
-AMPLIENCE_HUB_ID_SANDBOX
+AMPLIENCE_HUB_ID_PLAYGROUND
 
 AMPLIENCE_HUB_ID_PRODUCTION
 

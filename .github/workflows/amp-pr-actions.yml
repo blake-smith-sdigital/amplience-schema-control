@@ -11,7 +11,7 @@ on:
       - "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/**"
 
 env:
-    HUB_SANDBOX: "Amplience B2C Sandbox"
+    HUB_PLAYGROUND: "Amplience B2C Playground"
     HUB_DEVELOP: "Amplience B2C Development"
     HUB_QA: "Amplience B2C QA (B2C Production)"
     HUB_PROD: "Amplience B2C Production"
@@ -95,17 +95,17 @@ jobs:
           isMerged: ${{ env.isMerged }}
           has_changed_files: ${{ env.has_changed_files }}
 
-          AMPLIENCE_CLIENT_ID_SANDBOX: ${{ vars.AMPLIENCE_CLIENT_ID_SANDBOX }}
+          AMPLIENCE_CLIENT_ID_PLAYGROUND: ${{ vars.AMPLIENCE_CLIENT_ID_PLAYGROUND }}
           AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
           AMPLIENCE_CLIENT_ID_PRODUCTION: ${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}
           AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
           
-          AMPLIENCE_HUB_ID_SANDBOX: ${{ vars.AMPLIENCE_HUB_ID_SANDBOX }}
+          AMPLIENCE_HUB_ID_PLAYGROUND: ${{ vars.AMPLIENCE_HUB_ID_PLAYGROUND }}
           AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
           AMPLIENCE_HUB_ID_PRODUCTION: ${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}
           AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
           
-          AMPLIENCE_SECRET_SANDBOX: ${{ secrets.AMPLIENCE_SECRET_SANDBOX }}
+          AMPLIENCE_SECRET_PLAYGROUND: ${{ secrets.AMPLIENCE_SECRET_PLAYGROUND }}
           AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
           AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
           AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
@@ -133,10 +133,10 @@ jobs:
 
           if [[ -n $hub_to_update ]]; then
             echo "Hub to update: $hub_to_update"
-            if [[ "$hub_to_update" == "$HUB_SANDBOX" ]]; then
-              client_id=$AMPLIENCE_CLIENT_ID_SANDBOX
-              client_secret=$AMPLIENCE_SECRET_SANDBOX
-              hub_id=$AMPLIENCE_HUB_ID_SANDBOX
+            if [[ "$hub_to_update" == "$HUB_PLAYGROUND" ]]; then
+              client_id=$AMPLIENCE_CLIENT_ID_PLAYGROUND
+              client_secret=$AMPLIENCE_SECRET_PLAYGROUND
+              hub_id=$AMPLIENCE_HUB_ID_PLAYGROUND
             elif [[ $hub_to_update = "$HUB_DEVELOP" ]]; then
               client_id=$AMPLIENCE_CLIENT_ID_DEV2
               client_secret=$AMPLIENCE_SECRET_DEV2
