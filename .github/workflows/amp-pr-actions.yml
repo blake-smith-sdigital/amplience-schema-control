@@ -1,5 +1,7 @@
 name: Amplience Schema Github Actions
 
+# testing
+
 on:
   pull_request:
     types:
