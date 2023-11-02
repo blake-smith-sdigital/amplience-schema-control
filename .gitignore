@@ -5,3 +5,8 @@
 .env
 
 .DS_Store
+
+/node_modules
+
+!/node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/
+
