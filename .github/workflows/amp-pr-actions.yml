@@ -10,14 +10,14 @@ on:
     branches:
       - master
     paths:
-      - "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/**"
+      - "amplience/schemas/**"
 
 env:
     HUB_DEVELOP: "Amplience B2C Development"
     HUB_QA: "Amplience B2C QA (B2C Production)"
     HUB_PROD: "Amplience B2C Production"
-    SCHEMA_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/schemas/"
-    SCHEMA_PARENT_DIR: "node_modules/@specializedbicycles/sbc-ui-toolkit/src/amplience/"
+    SCHEMA_DIR: "amplience/schemas/"
+    SCHEMA_PARENT_DIR: "amplience/"
 
 jobs:
   amplience-pr-actions:
