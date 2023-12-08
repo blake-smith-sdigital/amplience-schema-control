@@ -61,6 +61,7 @@
         "headline",
         "background",
         "link",
+        "background",
         "strapline"
     ]
 }

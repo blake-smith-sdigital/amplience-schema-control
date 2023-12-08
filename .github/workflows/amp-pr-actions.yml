@@ -65,7 +65,9 @@ jobs:
               API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/$pull_request_number/files"
               RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.API_ACCESS_TOKEN }}" "$API_URL")
 
-              FILES=$(echo "TESTING ${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
+              echo "FILENAME ${.filename}"
+  
+              FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
             fi
 
           elif [[ "$event_name" == "push" ]]; then
