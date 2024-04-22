@@ -68,6 +68,7 @@ jobs:
               echo "${RESPONSE}"
 
               FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
+              echo "FILES: $FILES"
             fi
 
           elif [[ "$event_name" == "push" ]]; then
