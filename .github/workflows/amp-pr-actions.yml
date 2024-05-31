@@ -182,7 +182,7 @@ jobs:
         run: |
           test -e $file && echo "File found: $file" || "File not found: $file"
 
-          if [[ $file ]]:
+          if [[ $file ]]; then
             echo "Create local folders for file export ..."
             mkdir -p "export/schemas"
 
