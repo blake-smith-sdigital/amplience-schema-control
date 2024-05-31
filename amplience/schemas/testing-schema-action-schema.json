@@ -58,8 +58,8 @@
         }
     },
     "propertyOrder": [
-        "headline",
         "background",
+        "headline",
         "link",
         "strapline"
     ]
