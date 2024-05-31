@@ -1,0 +1,5 @@
+{
+    "body": "./schemas/DeleteMe5-schema.json",
+    "schemaId": "https://specialized.com/B2C/contents/DeleteMe5",
+    "validationLevel": "CONTENT_TYPE"
+  }
