@@ -181,67 +181,73 @@ jobs:
 
         run: |
           test -e $file && echo "File found: $file" || "File not found: $file"
-          echo "Create local folders for file export ..."
-          mkdir -p "export/schemas"
 
-          pointer_folder="export"
-          schema_folder="export/schemas"
+          if [[ $file ]]:
+            echo "Create local folders for file export ..."
+            mkdir -p "export/schemas"
 
-          while IFS= read -r -d ' ' file; do
-            echo "Processing file: $file ..."
+            pointer_folder="export"
+            schema_folder="export/schemas"
 
-            filename=$(basename "$file")
-            cp -v "$file" "$schema_folder"
-            echo "File copied to: $schema_folder"
+            while IFS= read -r -d ' ' file; do
+              echo "Processing file: $file ..."
 
-            # TODO bs schema has this declaration
-            pointer_file="${filename/-schema/}"
-            echo "Pointer file name: $pointer_file"
+              filename=$(basename "$file")
+              cp -v "$file" "$schema_folder"
+              echo "File copied to: $schema_folder"
 
-            cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
-            echo "File copied to: $pointer_folder"
-          done < changed_files.txt
+              # TODO bs schema has this declaration
+              pointer_file="${filename/-schema/}"
+              echo "Pointer file name: $pointer_file"
 
-          echo "Local folders & files for export:"
-          find export -type f
+              cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
+              echo "File copied to: $pointer_folder"
+            done < changed_files.txt
 
-          echo "Importing files to Amplience Hub ..."
-          schema_export=$(dc-cli content-type-schema import export)
-          echo "Schema export: $schema_export"
+            echo "Local folders & files for export:"
+            find export -type f
 
-          trimmed_output=$(echo "$schema_export" | awk '{$1=$1;print}')
-          schema_lines=$(echo "$trimmed_output" | awk -F'|' '{if (NF>2) print $2 "|" $3 "|" $4}')
+            echo "Importing files to Amplience Hub ..."
+            schema_export=$(dc-cli content-type-schema import export)
+            echo "Schema export: $schema_export"
 
-          schema_ids=()
-          while IFS='|' read -r id schema_id result; do
-            if [[ "$result" == *"UPDATED"* || "$result" == *"UP-TO-DATE"* ]]; then
-              echo "Schema Id: $schema_id"
-              schema_ids+=("$schema_id")
-            fi
-          done <<< "$schema_lines"
-          echo "Schema Ids: ${schema_ids[@]}"
+            trimmed_output=$(echo "$schema_export" | awk '{$1=$1;print}')
+            schema_lines=$(echo "$trimmed_output" | awk -F'|' '{if (NF>2) print $2 "|" $3 "|" $4}')
 
-          content_type_list=$(dc-cli content-type list --json)
+            schema_ids=()
+            while IFS='|' read -r id schema_id result; do
+              if [[ "$result" == *"UPDATED"* || "$result" == *"UP-TO-DATE"* ]]; then
+                echo "Schema Id: $schema_id"
+                schema_ids+=("$schema_id")
+              fi
+            done <<< "$schema_lines"
+            echo "Schema Ids: ${schema_ids[@]}"
 
-          echo "Looping thru the schema_ids array ..."
-          for schema_id in "${schema_ids[@]}"; do
-            echo "schema_id: $schema_id"
+            content_type_list=$(dc-cli content-type list --json)
 
-            trimmed_schema_id=$(echo "$schema_id" | awk '{$1=$1;print}')
+            echo "Looping thru the schema_ids array ..."
+            for schema_id in "${schema_ids[@]}"; do
+              echo "schema_id: $schema_id"
 
-            content_type=$(echo "$content_type_list" | jq -r --arg schemaId "$trimmed_schema_id" '.[] | select(.contentTypeUri == $schemaId)')
-            echo "content_type: $content_type"
+              trimmed_schema_id=$(echo "$schema_id" | awk '{$1=$1;print}')
 
-            if [ -n "$content_type" ]; then
-              content_type_id=$(echo "$content_type" | jq -r '.id')
-              echo "content_type_id: $content_type_id"
+              content_type=$(echo "$content_type_list" | jq -r --arg schemaId "$trimmed_schema_id" '.[] | select(.contentTypeUri == $schemaId)')
+              echo "content_type: $content_type"
 
-              echo "Syncing content type with updated schema ..."
-              dc-cli content-type sync $content_type_id
-            else
-              echo "Skipping content type synchronization. No content items with this content type schema found."
-            fi
-          done
+              if [ -n "$content_type" ]; then
+                content_type_id=$(echo "$content_type" | jq -r '.id')
+                echo "content_type_id: $content_type_id"
+
+                echo "Syncing content type with updated schema ..."
+                dc-cli content-type sync $content_type_id
+              else
+                echo "Skipping content type synchronization. No content items with this content type schema found."
+              fi
+            done
+
+          elif:
+            echo "File deletion detected, skipping."
+          fi
 
       - name: Upload log file as artifact
         if: env.has_changed_files == 'true'
