@@ -245,7 +245,7 @@ jobs:
               fi
             done
 
-          elif:
+          else:
             echo "File deletion detected, skipping."
           fi
 
