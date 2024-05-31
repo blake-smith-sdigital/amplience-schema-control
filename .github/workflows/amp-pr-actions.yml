@@ -193,7 +193,7 @@ jobs:
             echo "Processing file: $file ..."
             filename=$(basename "$file")
 
-            echo "HASHFILE ${{ hashFiles('$file') }}"
+            echo "HASHFILE ${{ hashFiles('**/$filename') }}"
             echo "BOOL ${{ hashFiles('$file') != '' }}"
 
             if [[ "${{ hashFiles('$file') }}" != "" ]]; then
