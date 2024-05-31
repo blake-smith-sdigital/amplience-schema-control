@@ -193,10 +193,10 @@ jobs:
             echo "Processing file: $file ..."
             filename=$(basename "$file")
 
-            echo "HASHFILE ${{ hashFiles('**/$filename') }}"
-            echo "BOOL ${{ hashFiles('$file') != '' }}"
+            echo "HASHFILE ${{ hashFiles('$filename') }}"
+            echo "BOOL ${{ hashFiles('$filename') != '' }}"
 
-            if [[ "${{ hashFiles('$file') }}" != "" ]]; then
+            if [[ "${{ hashFiles('$filename') }}" != "" ]]; then
               cp -v "$file" "$schema_folder"
               echo "File copied to: $schema_folder"
 
