@@ -196,7 +196,7 @@ jobs:
             echo "HASHFILE ${{ hashFiles('$file') }}"
             echo "BOOL ${{ hashFiles('$file') != '' }}"
 
-            if [[ ${{ hashFiles('$file') != '' }} ]]; then
+            if [[ "${{ hashFiles('$file') }}" != "" ]]; then
               cp -v "$file" "$schema_folder"
               echo "File copied to: $schema_folder"
 
