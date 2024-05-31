@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image WITH IF in WHEN AND DELETE",
+            "title": "Background image DELETE TESTING AGAIN",
             "properties": {
                 "alt": {
                     "title": "Alternative text",
