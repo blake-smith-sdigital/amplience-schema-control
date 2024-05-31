@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image WITH IF",
+            "title": "Background image WITH IF in WHEN",
             "properties": {
                 "alt": {
                     "title": "Alternative text",
