@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image",
+            "title": "Background image test",
             "properties": {
                 "alt": {
                     "title": "Alternative text",
