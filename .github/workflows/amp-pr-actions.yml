@@ -191,9 +191,9 @@ jobs:
 
           while IFS= read -r -d ' ' file; do
             echo "Processing file: $file ..."
+            filename=$(basename "$file")
 
-            if [[ "$file" != "" ]]; then
-              filename=$(basename "$file")
+            if [[ ${{ hashFiles('$file') != '' }} ]]; then
               cp -v "$file" "$schema_folder"
               echo "File copied to: $schema_folder"
 
@@ -203,6 +203,8 @@ jobs:
 
               cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
               echo "File copied to: $pointer_folder"
+            else
+              echo "File was deleted, skipping..."
             fi
 
           done < changed_files.txt
