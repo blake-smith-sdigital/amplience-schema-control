@@ -1,7 +1,7 @@
 {
     "$schema": "http://json-schema.org/draft-07/schema#",
-    "$id": "https://specialized.com/B2C/contents/tutorial-banner-testing-import",
-    "title": "Example Banner",
+    "$id": "https://specialized.com/B2C/contents/DeleteMe2",
+    "title": "Delete Me Test",
     "description": "Banner used for code examples in developer portal",
     "allOf": [
         {
@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image ADDITIVE CHANGE",
+            "title": "Background image test",
             "properties": {
                 "alt": {
                     "title": "Alternative text",
