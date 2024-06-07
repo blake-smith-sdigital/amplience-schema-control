@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image PLEASE PLEASE PLEASE WORK",
+            "title": "Background image PLEASE PLEASE PLEASE WORK 1",
             "properties": {
                 "alt": {
                     "title": "Alternative text",

@@ -1,23 +1,22 @@
 name: Amplience Schema Github Actions
 
-# testing
-
 on:
   pull_request:
     types:
-    - closed
+      - opened
+      - closed
   push:
     branches:
       - master
     paths:
-      - "amplience/schemas/**"
+      - 'amplience/schemas/**'
 
 env:
-    HUB_DEVELOP: "Amplience B2C Development"
-    HUB_QA: "Amplience B2C QA (B2C Production)"
-    HUB_PROD: "Amplience B2C Production"
-    SCHEMA_DIR: "amplience/schemas/"
-    SCHEMA_PARENT_DIR: "amplience/"
+  HUB_DEVELOP: 'Amplience B2C Development'
+  HUB_QA: 'Amplience B2C QA'
+  HUB_PROD: 'Amplience B2C Production'
+  SCHEMA_DIR: 'amplience/schemas/'
+  SCHEMA_PARENT_DIR: 'amplience/'
 
 jobs:
   amplience-pr-actions:
@@ -69,6 +68,11 @@ jobs:
 
               FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
               echo "FILES: $FILES"
+            elif [[ "$pr_type" == "opened" ]]; then
+              echo "Event type is opened ..."
+              git fetch --unshallow origin master
+              FILES=$(git diff --name-only HEAD~1 -- "$SCHEMA_DIR" | tr '\n' ' ')
+              echo "FILES: $FILES"
             fi
 
           elif [[ "$event_name" == "push" ]]; then
@@ -102,11 +106,11 @@ jobs:
           AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
           AMPLIENCE_CLIENT_ID_PRODUCTION: ${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}
           AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
-          
+
           AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
           AMPLIENCE_HUB_ID_PRODUCTION: ${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}
           AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
-          
+
           AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
           AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
           AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
@@ -114,17 +118,23 @@ jobs:
         run: |
           if [[ $event_name == "pull_request" ]]; then
 
-            if [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
-              echo "The PR is of type 'closed & merged'."
+          if [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
+          echo "The PR is of type 'closed & merged'."
 
+          # if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+          #   hub_to_update="$HUB_DEVELOP"
+
+            if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+              hub_to_update="$HUB_QA"
+            elif [[ "${{ env.destination_branch }}" == "main" ]]; then
+              hub_to_update="$HUB_PROD"
+            fi
+            elif [[ "${{ env.pr_type }}" == "opened" ]]; then
               if [[ "${{ env.destination_branch }}" == "develop" ]]; then
                 hub_to_update="$HUB_DEVELOP"
-              elif [[ "${{ env.destination_branch }}" == "qa" ]]; then
-                hub_to_update="$HUB_QA"
-              elif [[ "${{ env.destination_branch }}" == "master" ]]; then
-                hub_to_update="$HUB_PROD"
               fi
             fi
+
             # TODO save
             # elif [[ "$event_name" == "push" ]]; then
             #  hub_to_update="$HUB_PROD"
@@ -176,13 +186,11 @@ jobs:
       - name: Process files
         id: process_changed_files
         if: ${{ env.hub_to_update != '' }}
-        continue-on-error: true
         env:
           hub_to_update: ${{ env.hub_to_update }}
 
         run: |
           test -e $file && echo "File found: $file" || "File not found: $file"
-
           echo "Create local folders for file export ..."
           mkdir -p "export/schemas"
 
@@ -191,25 +199,17 @@ jobs:
 
           while IFS= read -r -d ' ' file; do
             echo "Processing file: $file ..."
+
             filename=$(basename "$file")
+            cp -v "$file" "$schema_folder"
+            echo "File copied to: $schema_folder"
 
-            echo "HASHFILE ${{ hashFiles('**/$filename') }}"
-            echo "BOOL ${{ hashFiles('$file') != '' }}"
+            # TODO bs schema has this declaration
+            pointer_file="${filename/-schema/}"
+            echo "Pointer file name: $pointer_file"
 
-            if [[ "${{ hashFiles('$file') }}" != "" ]]; then
-              cp -v "$file" "$schema_folder"
-              echo "File copied to: $schema_folder"
-
-              # TODO bs schema has this declaration
-              pointer_file="${filename/-schema/}"
-              echo "Pointer file name: $pointer_file"
-
-              cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
-              echo "File copied to: $pointer_folder"
-            else
-              echo "File was deleted, skipping..."
-            fi
-
+            cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
+            echo "File copied to: $pointer_folder"
           done < changed_files.txt
 
           echo "Local folders & files for export:"
@@ -255,7 +255,7 @@ jobs:
 
       - name: Upload log file as artifact
         if: env.has_changed_files == 'true'
-        env: 
+        env:
           has_changed_files: ${{ env.has_changed_files }}
         uses: actions/upload-artifact@v2
         with:
