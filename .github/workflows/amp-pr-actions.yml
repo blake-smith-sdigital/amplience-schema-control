@@ -5,6 +5,7 @@ name: Amplience Schema Github Actions
 on:
   pull_request:
     types:
+    - opened
     - closed
   push:
     branches:
@@ -69,6 +70,11 @@ jobs:
 
               FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
               echo "FILES: $FILES"
+            elif [[ "$pr_type" == "opened" ]]; then
+              echo "Event type is opened ..."
+              git fetch --unshallow origin master
+              FILES=$(git diff --name-only HEAD~1 -- "$SCHEMA_DIR" | tr '\n' ' ')
+              echo "FILES: $FILES"
             fi
 
           elif [[ "$event_name" == "push" ]]; then
@@ -117,14 +123,20 @@ jobs:
             if [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
               echo "The PR is of type 'closed & merged'."
 
+              # if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+              #   hub_to_update="$HUB_DEVELOP"
+
               if [[ "${{ env.destination_branch }}" == "develop" ]]; then
-                hub_to_update="$HUB_DEVELOP"
-              elif [[ "${{ env.destination_branch }}" == "qa" ]]; then
                 hub_to_update="$HUB_QA"
-              elif [[ "${{ env.destination_branch }}" == "master" ]]; then
+              elif [[ "${{ env.destination_branch }}" == "main" ]]; then
                 hub_to_update="$HUB_PROD"
               fi
+            elif [[ "${{ env.pr_type }}" == "opened" ]]; then
+              if [[ "${{ env.destination_branch }}" == "develop" ]]; then
+                hub_to_update="$HUB_DEVELOP"
+              fi
             fi
+
             # TODO save
             # elif [[ "$event_name" == "push" ]]; then
             #  hub_to_update="$HUB_PROD"
