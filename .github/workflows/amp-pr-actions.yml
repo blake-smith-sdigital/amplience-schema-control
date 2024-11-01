@@ -183,18 +183,22 @@ jobs:
           schema_folder="export/schemas"
 
           while IFS= read -r -d ' ' file; do
+          if [ -e "$file" ]; then
             echo "Processing file: $file ..."
-
+    
             filename=$(basename "$file")
             cp -v "$file" "$schema_folder"
             echo "File copied to: $schema_folder"
-
-            # TODO bs schema has this declaration
+    
             pointer_file="${filename/-schema/}"
             echo "Pointer file name: $pointer_file"
-
+    
             cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
             echo "File copied to: $pointer_folder"
+          else
+            echo "File not found: $file. Skipping..."
+          fi
+
           done < changed_files.txt
 
           echo "Local folders & files for export:"
