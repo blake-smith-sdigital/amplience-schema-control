@@ -26,7 +26,7 @@
             "properties": {
                 "alt": {
                     "title": "Alternative text",
-                    "description": "Alternative text for the background image test",
+                    "description": "Alternative text for the background image test NOVEMBER test",
                     "type": "string"
                 },
                 "image": {
