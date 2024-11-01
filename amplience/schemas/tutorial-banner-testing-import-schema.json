@@ -22,7 +22,7 @@
         },
         "background": {
             "type": "object",
-            "title": "Background image PLEASE PLEASE PLEASE WORK 1",
+            "title": "Background image NOV test 2 SHOULD WORK!!!!",
             "properties": {
                 "alt": {
                     "title": "Alternative text",
