@@ -185,14 +185,14 @@ jobs:
           while IFS= read -r -d ' ' file; do
           if [ -e "$file" ]; then
             echo "Processing file: $file ..."
-    
+
             filename=$(basename "$file")
             cp -v "$file" "$schema_folder"
             echo "File copied to: $schema_folder"
-    
+
             pointer_file="${filename/-schema/}"
             echo "Pointer file name: $pointer_file"
-    
+
             cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
             echo "File copied to: $pointer_folder"
           else
@@ -246,7 +246,8 @@ jobs:
         if: env.has_changed_files == 'true'
         env:
           has_changed_files: ${{ env.has_changed_files }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dc-cli-logs
           path: /home/runner/.amplience/logs/*.log
+          overwrite: true
