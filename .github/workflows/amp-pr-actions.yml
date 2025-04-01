@@ -58,6 +58,8 @@ jobs:
       - name: Install Amplience CLI and Configure Hub
         if: env.HAS_CHANGES == 'true'
         run: |
+          npm config set prefix ~/.npm-global
+          echo "$HOME/.npm-global/bin" >> $GITHUB_PATH
           npm install -g @amplience/dc-cli
           dc-cli configure --clientId "${{ secrets.AMPLIENCE_CLIENT_ID }}" \
                            --clientSecret "${{ secrets.AMPLIENCE_SECRET }}" \
