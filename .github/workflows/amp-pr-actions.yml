@@ -58,7 +58,8 @@ jobs:
       - name: Install Amplience CLI and Configure Hub
         if: env.HAS_CHANGES == 'true'
         run: |
-          npm install @amplience/dc-cli
+          npm install -g npm@latest
+          sudo npm install -g @amplience/dc-cli
           dc-cli configure --clientId "${{ secrets.AMPLIENCE_CLIENT_ID }}" \
                            --clientSecret "${{ secrets.AMPLIENCE_SECRET }}" \
                            --hubId "${{ secrets.AMPLIENCE_HUB_ID }}"
