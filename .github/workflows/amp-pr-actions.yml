@@ -55,6 +55,7 @@ jobs:
           esac
 
           echo "hub=$hub" >> $GITHUB_ENV
+          echo "Current hub: ${{ env.hub }}"
 
       - name: Install Amplience CLI and Configure Hub
         if: env.HAS_CHANGES == 'true'
@@ -73,8 +74,6 @@ jobs:
           AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
           AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
           AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
-
-          echo "Current hub: ${{ env.hub }}"
 
         run: |
           npm install @amplience/dc-cli
