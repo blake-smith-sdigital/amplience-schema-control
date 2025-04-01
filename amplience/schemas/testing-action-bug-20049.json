@@ -60,7 +60,7 @@
   "propertyOrder": [
       "background",
       "headline",
-      "link",
-      "strapline"
+      "strapline",
+      "link"
   ]
 }
