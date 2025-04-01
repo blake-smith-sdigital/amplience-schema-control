@@ -17,6 +17,7 @@ env:
     qa: Amplience B2C QA
     production: Amplience B2C Production
 
+
 jobs:
   process-schemas:
     runs-on: ubuntu-latest
@@ -57,12 +58,27 @@ jobs:
 
       - name: Install Amplience CLI and Configure Hub
         if: env.HAS_CHANGES == 'true'
+        env:
+          client_id: ${{ env.client_id }}
+          client_secret: ${{ env.client_secret }}
+          hub_id: ${{ env.hub_id }}
+          AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
+          AMPLIENCE_CLIENT_ID_PRODUCTION: ${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}
+          AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
+
+          AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
+          AMPLIENCE_HUB_ID_PRODUCTION: ${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}
+          AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
+
+          AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
+          AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
+          AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
+
+          echo "Current hub: ${{ env.hub }}"
+
         run: |
-          npm install -g npm@latest
-          sudo npm install -g @amplience/dc-cli
-          dc-cli configure --clientId "${{ secrets.AMPLIENCE_CLIENT_ID }}" \
-                           --clientSecret "${{ secrets.AMPLIENCE_SECRET }}" \
-                           --hubId "${{ secrets.AMPLIENCE_HUB_ID }}"
+          npm install @amplience/dc-cli
+          dc-cli configure --clientId $client_id --clientSecret $client_secret --hubId $hub_id
 
       - name: Upload Changed Schemas to Amplience
         if: env.HAS_CHANGES == 'true'
