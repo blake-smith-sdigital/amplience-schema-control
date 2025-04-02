@@ -1,0 +1,5 @@
+{
+  "body": "./schemas/test-action-deleting-schema.json",
+  "schemaId": "https://specialized.com/B2C/contents/test-action-deleting",
+  "validationLevel": "CONTENT_TYPE"
+}
