@@ -27,18 +27,14 @@ jobs:
       - name: Get Event Information
         id: event_info
         run: |
-          echo "event_name=${{ github.event_name }}"
-          echo "::set-env name=event_name::${{ github.event_name }}"
+          echo "event_name=${{ github.event_name }}" >> $GITHUB_ENV
+          event_name=${{ github.event_name }}
 
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "pr_type=${{ github.event.action }}"
-            echo "::set-env name=pr_type::${{ github.event.action }}"
-            echo "current_branch=${{ github.event.pull_request.head.ref }}"
-            echo "::set-env name=current_branch::${{ github.event.pull_request.head.ref }}"
-            echo "destination_branch=${{ github.event.pull_request.base.ref }}"
-            echo "::set-env name=destination_branch::${{ github.event.pull_request.base.ref }}"
-            echo "isMerged=${{ github.event.pull_request.merged }}"
-            echo "::set-env name=isMerged::${{ github.event.pull_request.merged }}"
+          if [[ $event_name == "pull_request" ]]; then
+            echo "pr_type=${{ github.event.action }}" >> $GITHUB_ENV
+            echo "current_branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+            echo "destination_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+            echo "isMerged=${{ github.event.pull_request.merged }}" >> $GITHUB_ENV
           fi
 
       - name: Check for Amplience File/Schema Changes
