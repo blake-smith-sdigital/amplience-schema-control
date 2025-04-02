@@ -30,7 +30,7 @@
                   "type": "string"
               },
               "image": {
-                  "title": "Image TESTING 3",
+                  "title": "Image TESTING 4",
                   "description": "The image for the background of this banner",
                   "allOf": [
                       {
