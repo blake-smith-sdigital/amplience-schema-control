@@ -12,7 +12,7 @@
     "properties": {
         "headline": {
             "title": "Headline",
-            "description": "The main title of this banner",
+            "description": "The main title of this banner DELETE",
             "type": "string"
         },
         "strapline": {
