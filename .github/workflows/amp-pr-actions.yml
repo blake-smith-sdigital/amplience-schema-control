@@ -67,10 +67,10 @@ jobs:
 
           if [[ -n "$changed_files" ]]; then
             echo "File changes were detected in $SCHEMA_DIR."
-            echo "::set-env name=has_changed_files::true"
+            echo "has_changed_files=true" >> $GITHUB_ENV
           else
             echo "There are no changed files in $SCHEMA_DIR."
-            echo "::set-env name=has_changed_files::false"
+            echo "has_changed_files=false" >> $GITHUB_ENV
           fi
 
       - name: Configure the Hub to update
@@ -92,7 +92,7 @@ jobs:
           fi
 
           echo "Hub to update: $hub_to_update"
-          echo "::set-env name=hub_to_update::$hub_to_update"
+          echo "hub_to_update=$hub_to_update" >> $GITHUB_ENV
 
           if [[ -n $hub_to_update ]]; then
             echo "Hub to update: $hub_to_update"
@@ -109,12 +109,9 @@ jobs:
               client_secret="${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}"
               hub_id="${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}"
             fi
-            echo "client_id=$client_id"
-            echo "::set-env name=client_id::$client_id"
-            echo "client_secret=********"
-            echo "::set-env name=client_secret::$client_secret"
-            echo "hub_id=$hub_id"
-            echo "::set-env name=hub_id::$hub_id"
+            echo "client_id=$client_id" >> $GITHUB_ENV
+            echo "client_secret=$client_secret" >> $GITHUB_ENV
+            echo "hub_id=$hub_id" >> $GITHUB_ENV
           else
             echo "There is no Hub to update."
           fi
