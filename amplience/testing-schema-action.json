@@ -1,5 +1,5 @@
 {
-    "body": "./schemas/testing-schema-action-schema.json",
-    "schemaId": "https://specialized.com/B2C/contents/testing-schema-action-schema",
-    "validationLevel": "CONTENT_TYPE"
-  }
+  "body": "./schemas/testing-schema-action-schema.json",
+  "schemaId": "https://specialized.com/B2C/contents/testing-schema-action",
+  "validationLevel": "CONTENT_TYPE"
+}
