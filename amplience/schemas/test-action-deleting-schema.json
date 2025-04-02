@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://specialized.com/B2C/contents/testing-action-bug-20049",
+  "$id": "https://specialized.com/B2C/contents/test-action-deleting",
   "title": "Testing Action Bug 20049",
   "description": "Banner used for code examples in developer portal",
   "allOf": [
@@ -30,7 +30,7 @@
                   "type": "string"
               },
               "image": {
-                  "title": "Image TESTING 9",
+                  "title": "Image TESTING 8",
                   "description": "The image for the background of this banner",
                   "allOf": [
                       {
