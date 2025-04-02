@@ -121,7 +121,7 @@ jobs:
         if: env.hub_to_update != ''
         run: |
           echo "Install npm (latest) ..."
-          npm install -g npm@latest
+          sudo npm install -g npm@latest
 
           echo "Install dc-cli ..."
           sudo npm install -g @amplience/dc-cli
