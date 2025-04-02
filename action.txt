@@ -27,38 +27,45 @@ jobs:
       - name: Get Event Information
         id: event_info
         run: |
-          echo "event_name=${{ github.event_name }}"
-          echo "::set-env name=event_name::${{ github.event_name }}"
+          event_name=${{ github.event_name }}
+          echo "event_name=${{ github.event_name }}" >> $GITHUB_ENV
 
-          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "pr_type=${{ github.event.action }}"
-            echo "::set-env name=pr_type::${{ github.event.action }}"
-            echo "current_branch=${{ github.event.pull_request.head.ref }}"
-            echo "::set-env name=current_branch::${{ github.event.pull_request.head.ref }}"
-            echo "destination_branch=${{ github.event.pull_request.base.ref }}"
-            echo "::set-env name=destination_branch::${{ github.event.pull_request.base.ref }}"
-            echo "isMerged=${{ github.event.pull_request.merged }}"
-            echo "::set-env name=isMerged::${{ github.event.pull_request.merged }}"
+          if [[ $event_name == "pull_request" ]]; then
+            echo "pr_type=${{ github.event.action }}" >> $GITHUB_ENV
+            echo "current_branch=${{ github.event.pull_request.head.ref }}" >> $GITHUB_ENV
+            echo "destination_branch=${{ github.event.pull_request.base.ref }}" >> $GITHUB_ENV
+            echo "isMerged=${{ github.event.pull_request.merged }}" >> $GITHUB_ENV
           fi
 
       - name: Check for Amplience File/Schema Changes
         id: changed_files
+        env:
+          event_name: ${{ env.event_name }}
+          pr_type: ${{ env.pr_type }}
+          current_branch: ${{ env.current_branch }}
+          destination_branch: ${{ env.destination_branch }}
+          isMerged: ${{ env.isMerged }}
         run: |
-          echo "Event Name: $event_name"
-          echo "PR Type: $pr_type"
-          echo "Current Branch: $current_branch"
-          echo "Destination Branch: $destination_branch"
-          echo "PR Merged: $isMerged"
 
-          FILES=""
-          if [[ "$event_name" == "pull_request" ]]; then
+          if [[ $event_name == "pull_request" ]]; then
+            echo "PR Type: $pr_type"
+            echo "Current Branch: $current_branch"
+            echo "Destination Branch: $destination_branch"
+            echo "PR Merged: $isMerged"
+          fi
+
+          if [[ $event_name == "pull_request" ]]; then
             if [[ "$pr_type" == "closed" && "$isMerged" == "true" ]]; then
               echo "PR was merged & closed ..."
+
               pull_request_number="${{ github.event.pull_request.number }}"
+
               API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/$pull_request_number/files"
               RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.API_ACCESS_TOKEN }}" "$API_URL")
+
               FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
             fi
+
           elif [[ "$event_name" == "push" ]]; then
             echo "Event type is push ..."
             git fetch --unshallow origin main
@@ -70,62 +77,87 @@ jobs:
           changed_files=$(cat changed_files.txt)
 
           if [[ -n "$changed_files" ]]; then
+            echo "has_changed_files=true" >> $GITHUB_ENV
             echo "File changes were detected in $SCHEMA_DIR."
-            echo "::set-env name=has_changed_files::true"
           else
+            echo "has_changed_files=false" >> $GITHUB_ENV
             echo "There are no changed files in $SCHEMA_DIR."
-            echo "::set-env name=has_changed_files::false"
           fi
 
       - name: Configure the Hub to update
         id: configure_hub
         if: env.has_changed_files == 'true'
+        env:
+          event_name: ${{ env.event_name }}
+          pr_type: ${{ env.pr_type }}
+          destination_branch: ${{ env.destination_branch }}
+          isMerged: ${{ env.isMerged }}
+          has_changed_files: ${{ env.has_changed_files }}
+
+          AMPLIENCE_CLIENT_ID_QA: ${{ vars.AMPLIENCE_CLIENT_ID_QA }}
+          AMPLIENCE_CLIENT_ID_PRODUCTION: ${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}
+          AMPLIENCE_CLIENT_ID_DEV2: ${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}
+
+          AMPLIENCE_HUB_ID_QA: ${{ vars.AMPLIENCE_HUB_ID_QA }}
+          AMPLIENCE_HUB_ID_PRODUCTION: ${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}
+          AMPLIENCE_HUB_ID_DEV2: ${{ vars.AMPLIENCE_HUB_ID_DEV2 }}
+
+          AMPLIENCE_SECRET_QA: ${{ secrets.AMPLIENCE_SECRET_QA }}
+          AMPLIENCE_SECRET_PRODUCTION: ${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}
+          AMPLIENCE_SECRET_DEV2: ${{ secrets.AMPLIENCE_SECRET_DEV2 }}
+
         run: |
-          hub_to_update=""
-          if [[ "$event_name" == "pull_request" ]]; then
-            if [[ "$pr_type" == "closed" && "$isMerged" == "true" ]]; then
+          if [[ $event_name == "pull_request" ]]; then
+
+            if [[ "${{ env.pr_type }}" == "closed" && "${{ env.isMerged }}" == "true" ]]; then
               echo "The PR is of type 'closed & merged'."
-              if [[ "$destination_branch" == "develop" ]]; then
+
+              if [[ "${{ env.destination_branch }}" == "develop" ]]; then
                 hub_to_update="$HUB_DEVELOP"
-              elif [[ "$destination_branch" == "qa" ]]; then
+              elif [[ "${{ env.destination_branch }}" == "qa" ]]; then
                 hub_to_update="$HUB_QA"
-              elif [[ "$destination_branch" == "main" ]]; then
+              elif [[ "${{ env.destination_branch }}" == "main" ]]; then
                 hub_to_update="$HUB_PROD"
               fi
             fi
+            # TODO save
+            # elif [[ "$event_name" == "push" ]]; then
+            #  hub_to_update="$HUB_PROD"
           fi
 
-          echo "Hub to update: $hub_to_update"
-          echo "::set-env name=hub_to_update::$hub_to_update"
+          echo "hub_to_update=$hub_to_update" >> $GITHUB_ENV
 
           if [[ -n $hub_to_update ]]; then
             echo "Hub to update: $hub_to_update"
             if [[ $hub_to_update = "$HUB_DEVELOP" ]]; then
-              client_id="${{ vars.AMPLIENCE_CLIENT_ID_DEV2 }}"
-              client_secret="${{ secrets.AMPLIENCE_SECRET_DEV2 }}"
-              hub_id="${{ vars.AMPLIENCE_HUB_ID_DEV2 }}"
+              client_id=$AMPLIENCE_CLIENT_ID_DEV2
+              client_secret=$AMPLIENCE_SECRET_DEV2
+              hub_id=$AMPLIENCE_HUB_ID_DEV2
             elif [[ $hub_to_update = "$HUB_QA" ]]; then
-              client_id="${{ vars.AMPLIENCE_CLIENT_ID_QA }}"
-              client_secret="${{ secrets.AMPLIENCE_SECRET_QA }}"
-              hub_id="${{ vars.AMPLIENCE_HUB_ID_QA }}"
+              client_id=$AMPLIENCE_CLIENT_ID_QA
+              client_secret=$AMPLIENCE_SECRET_QA
+              hub_id=$AMPLIENCE_HUB_ID_QA
             elif [[ $hub_to_update = "$HUB_PROD" ]]; then
-              client_id="${{ vars.AMPLIENCE_CLIENT_ID_PRODUCTION }}"
-              client_secret="${{ secrets.AMPLIENCE_SECRET_PRODUCTION }}"
-              hub_id="${{ vars.AMPLIENCE_HUB_ID_PRODUCTION }}"
+              client_id=$AMPLIENCE_CLIENT_ID_PRODUCTION
+              client_secret=$AMPLIENCE_SECRET_PRODUCTION
+              hub_id=$AMPLIENCE_HUB_ID_PRODUCTION
             fi
-            echo "client_id=$client_id"
-            echo "::set-env name=client_id::$client_id"
-            echo "client_secret=********"
-            echo "::set-env name=client_secret::$client_secret"
-            echo "hub_id=$hub_id"
-            echo "::set-env name=hub_id::$hub_id"
-          else
+            echo "client_id=$client_id" >> $GITHUB_ENV
+            echo "client_secret=$client_secret" >> $GITHUB_ENV
+            echo "hub_id=$hub_id" >> $GITHUB_ENV
+          else 
             echo "There is no Hub to update."
           fi
 
       - name: Install DC-CLI
         id: install_dependencies
-        if: env.hub_to_update != ''
+        if: ${{ env.hub_to_update != '' }}
+        env:
+          client_id: ${{ env.client_id }}
+          client_secret: ${{ env.client_secret }}
+          hub_id: ${{ env.hub_id }}
+          hub_to_update: ${{ env.hub_to_update }}
+
         run: |
           echo "Install npm (latest) ..."
           npm install -g npm@latest
@@ -134,12 +166,16 @@ jobs:
           sudo npm install -g @amplience/dc-cli
 
           echo "dc-cli config ..."
-          dc-cli configure --clientId "$client_id" --clientSecret "$client_secret" --hubId "$hub_id"
+          dc-cli configure --clientId $client_id --clientSecret $client_secret --hubId $hub_id
 
       - name: Process files
         id: process_changed_files
-        if: env.hub_to_update != ''
+        if: ${{ env.hub_to_update != '' }}
+        env:
+          hub_to_update: ${{ env.hub_to_update }}
+
         run: |
+          test -e $file && echo "File found: $file" || "File not found: $file"
           echo "Create local folders for file export ..."
           mkdir -p "export/schemas"
 
@@ -147,21 +183,22 @@ jobs:
           schema_folder="export/schemas"
 
           while IFS= read -r -d ' ' file; do
-            if [ -e "$file" ]; then
-              echo "Processing file: $file ..."
+          if [ -e "$file" ]; then
+            echo "Processing file: $file ..."
 
-              filename=$(basename "$file")
-              cp -v "$file" "$schema_folder"
-              echo "File copied to: $schema_folder"
+            filename=$(basename "$file")
+            cp -v "$file" "$schema_folder"
+            echo "File copied to: $schema_folder"
 
-              pointer_file="${filename/-schema/}"
-              echo "Pointer file name: $pointer_file"
+            pointer_file="${filename/-schema/}"
+            echo "Pointer file name: $pointer_file"
 
-              cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
-              echo "File copied to: $pointer_folder"
-            else
-              echo "File not found: $file. Skipping..."
-            fi
+            cp -v "./$SCHEMA_PARENT_DIR/$pointer_file" "$pointer_folder"
+            echo "File copied to: $pointer_folder"
+          else
+            echo "File not found: $file. Skipping..."
+          fi
+
           done < changed_files.txt
 
           echo "Local folders & files for export:"
@@ -184,6 +221,7 @@ jobs:
           echo "Schema Ids: ${schema_ids[@]}"
 
           content_type_list=$(dc-cli content-type list --json)
+
           echo "Looping thru the schema_ids array ..."
           for schema_id in "${schema_ids[@]}"; do
             echo "schema_id: $schema_id"
@@ -198,7 +236,7 @@ jobs:
               echo "content_type_id: $content_type_id"
 
               echo "Syncing content type with updated schema ..."
-              dc-cli content-type sync "$content_type_id"
+              dc-cli content-type sync $content_type_id
             else
               echo "Skipping content type synchronization. No content items with this content type schema found."
             fi
@@ -206,6 +244,8 @@ jobs:
 
       - name: Upload log file as artifact
         if: env.has_changed_files == 'true'
+        env:
+          has_changed_files: ${{ env.has_changed_files }}
         uses: actions/upload-artifact@v4
         with:
           name: dc-cli-logs
