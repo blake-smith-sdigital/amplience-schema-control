@@ -30,7 +30,7 @@
                   "type": "string"
               },
               "image": {
-                  "title": "Image testing WITH UPDATE 2",
+                  "title": "Image testing WITH UPDATE Logging Feature Branch!!!",
                   "description": "The image for the background of this banner",
                   "allOf": [
                       {
