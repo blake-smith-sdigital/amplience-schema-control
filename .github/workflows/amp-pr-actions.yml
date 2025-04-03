@@ -53,7 +53,13 @@ jobs:
               pull_request_number="${{ github.event.pull_request.number }}"
               API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/$pull_request_number/files"
               RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.API_ACCESS_TOKEN }}" "$API_URL")
-              FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
+
+              # TODO bs
+              echo "Raw JSON Response: $RESPONSE" 
+              
+              # FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | select(.filename | startswith($folder)) | .filename' | tr '\n' ' ')
+              FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | .filename | select(startswith($folder))' | tr '\n' ' ')
+
             fi
           elif [[ "$event_name" == "push" ]]; then
             echo "Event type is push ..."
