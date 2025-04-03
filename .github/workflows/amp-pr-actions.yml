@@ -54,6 +54,9 @@ jobs:
               API_URL="https://api.github.com/repos/${{ github.repository }}/pulls/$pull_request_number/files"
               RESPONSE=$(curl -s -H "Authorization: Bearer ${{ secrets.API_ACCESS_TOKEN }}" "$API_URL")
 
+              # Log raw response
+              echo "Raw JSON Response: $RESPONSE"
+
               # Grab files from PR and store in FILES
               FILES=$(echo "${RESPONSE}" | jq -r --arg folder "$SCHEMA_DIR" '.[] | .filename | select(startswith($folder))' | tr '\n' ' ')
             fi
