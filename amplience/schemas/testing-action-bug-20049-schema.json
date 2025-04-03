@@ -30,7 +30,7 @@
                   "type": "string"
               },
               "image": {
-                  "title": "Image THIS IS UPDATING",
+                  "title": "Image TEST AFTER GOLIVE",
                   "description": "The image for the background of this banner",
                   "allOf": [
                       {
