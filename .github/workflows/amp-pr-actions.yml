@@ -86,7 +86,9 @@ jobs:
           if [[ "$event_name" == "pull_request" ]]; then
             if [[ "$pr_type" == "closed" && "$isMerged" == "true" ]]; then
               echo "The PR is of type 'closed & merged'."
-              if [[ "$destination_branch" == "develop" ]]; then
+              # TODO bs bring this back
+              # if [[ "$destination_branch" == "develop" ]]; then
+              if [[ "$destination_branch" == "feature-amp-logging" ]]; then
                 hub_to_update="$HUB_DEVELOP"
               elif [[ "$destination_branch" == "qa" ]]; then
                 hub_to_update="$HUB_QA"
